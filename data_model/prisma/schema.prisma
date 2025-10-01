@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- Definición de Modelos, es decir las tablas---
+model Usuario {
+  id_usuario               Int           @id @default(autoincrement())
+  nombre                   String
+  rol                      Rol           @relation(fields: [id_rol], references: [id_rol])
+  id_rol                   Int
+  supervisiones_realizadas Supervision[]
+}
+
+model Rol {
+  id_rol      Int       @id @default(autoincrement())
+  nombre_rol  String    @unique
+  descripcion String
+  usuarios    Usuario[]
+}
+
+model Profesor {
+  id_profesor         Int       @id @default(autoincrement())
+  codigo_profesor     Int       @unique
+  nombre              String
+  apellido            String
+  email_institucional String
+  secciones           Seccion[]
+}
+
+model Aula {
+  id_aula     Int       @id @default(autoincrement())
+  codigo_aula String    @unique
+  edificio    String
+  piso        String
+  secciones   Seccion[]
+}
+
+model Seccion {
+  id_seccion        Int           @id @default(autoincrement())
+  codigo_seccion    String        @unique
+  nombre_asignatura String
+  hora_inicio       DateTime      @db.Time
+  hora_fin          DateTime      @db.Time
+  dias_semana       String
+  estado            String
+  profesor          Profesor      @relation(fields: [id_profesor], references: [id_profesor])
+  id_profesor       Int
+  aula              Aula          @relation(fields: [id_aula], references: [id_aula])
+  id_aula           Int
+  supervisiones     Supervision[]
+}
+
+model Supervision {
+  id_supervision        Int         @id @default(autoincrement())
+  fecha_hora            DateTime
+  estado                String
+  observaciones         String
+  supervisor            Usuario     @relation(fields: [id_usuario_supervisor], references: [id_usuario])
+  id_usuario_supervisor Int
+  seccion               Seccion     @relation(fields: [id_seccion], references: [id_seccion])
+  id_seccion            Int
+  incidentes            Incidente[]
+  fotos                 Foto[]
+}
+
+model Incidente {
+  id_incidente          Int          @id @default(autoincrement())
+  tipo_incidente        String
+  descripcion_incidente String
+  fecha_hora_incidente  DateTime
+  supervision           Supervision? @relation(fields: [id_supervision], references: [id_supervision])
+  id_supervision        Int
+}
+
+model Foto {
+  id_foto        Int         @id @default(autoincrement())
+  url_foto       String
+  timestamp_foto DateTime
+  supervision    Supervision @relation(fields: [id_supervision], references: [id_supervision])
+  id_supervision Int
+}
